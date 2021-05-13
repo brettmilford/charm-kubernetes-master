@@ -813,6 +813,20 @@ def set_final_status():
                            'Waiting to retry updates for service-cidr expansion')
         return
 
+    if not is_flag_set("kubernetes-master.auth-webhook-service.started"):
+        hookenv.status_set("waiting", "Waiting for auth-webhook service to start")
+        return
+
+    if not is_flag_set("kubernetes-master.apiserver.configured"):
+        hookenv.status_set("waiting", "Waiting for API server to be configured")
+        return
+
+    auth_setup = is_flag_set("authentication.setup")
+    webhook_tokens_setup = is_flag_set("kubernetes-master.auth-webhook-tokens.setup")
+    if auth_setup and not webhook_tokens_setup:
+        hookenv.status_set("waiting", "Failed to setup auth-webhook tokens; will retry")
+        return
+
     if is_state('kubernetes-master.components.started'):
         # All services should be up and running at this point. Double-check...
         failing_services = master_services_down()
