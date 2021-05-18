@@ -398,7 +398,8 @@ async def startup(app):
                 app.logger.exception('Failed to get secrets')
 
     app['secrets'] = {}
-    app['secrets_task'] = asyncio.create_task(_task())
+    loop = asyncio.get_event_loop()
+    app['secrets_task'] = loop.create_task(_task())
 
 
 async def cleanup(app):
